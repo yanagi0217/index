@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>確認</title>
+<style>
+:root{--card:#fff;--ink:#171a23;--muted:#6b7280;--acc:#4f46e5;--line:#e6e8ee;--ok:#059669;}
+@media (prefers-color-scheme:dark){:root{--card:#1b1f27;--ink:#eeede4;--line:#2b303a;}}
+*{box-sizing:border-box;}
+body{margin:0;background:#f6f7fb;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;line-height:1.6;}
+@media (prefers-color-scheme:dark){body{background:#0e1217;}}
+.wrap{padding:14px;max-width:700px;margin:0 auto;}
+.hero{background:#4f46e5;color:#fff;border-radius:16px;padding:20px;margin-bottom:14px;}
+.hero h1{margin:0 0 6px;font-size:20px;font-weight:500;}
+.hero p{margin:0;font-size:12.5px;opacity:.95;}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px;}
+.card h2{font-size:13px;margin:0 0 12px;color:var(--muted);font-weight:500;}
+label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;}
+.chk{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;color:var(--ink);margin-top:10px;}
+.chk input{margin-top:3px;}
+select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font-size:14px;font-family:inherit;background:var(--card);color:var(--ink);}
+input[type=text]{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font-size:14px;font-family:inherit;background:var(--card);color:var(--ink);}
+button{font-family:inherit;font-size:13.5px;font-weight:500;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:11px 14px;border-radius:10px;}
+button.primary{background:#4f46e5;color:#fff;border:none;}
+button:disabled{opacity:.55;}
+.btnlink{display:inline-flex;align-items:center;padding:11px 14px;border:1px solid var(--line);border-radius:10px;font-size:13.5px;font-weight:500;text-decoration:none;color:var(--ink);background:var(--card);}
+.btnlink.line{border-color:#06c755;color:#06c755;}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center;}
+.hidden{display:none!important;}
+.status{font-size:13.5px;color:var(--muted);}
+.addrbox{background:#eef2ff;border:1px solid #dfe3ff;border-radius:12px;padding:14px;margin-bottom:12px;}
+.addrbox .label{font-size:11px;color:var(--acc);font-weight:500;margin-bottom:4px;}
+.addr{font-size:19px;font-weight:500;line-height:1.45;word-break:break-word;}
+#map,#map2{height:220px;border-radius:12px;overflow:hidden;border:1px solid var(--line);margin-bottom:12px;}
+.meta{width:100%;border-collapse:collapse;font-size:12.5px;}
+.meta td{padding:7px 4px;border-bottom:1px solid var(--line);vertical-align:top;}
+.meta td:first-child{color:var(--muted);width:34%;white-space:nowrap;}
+.hint{font-size:11.5px;color:var(--muted);margin:8px 0 0;}
+.err{color:#b91c1c;font-size:13px;}
+.okmsg{color:var(--ok);font-size:12px;}
+.tag{display:inline-block;font-size:10.5px;padding:1px 7px;border-radius:99px;background:#eef2ff;color:#4f46e5;margin-left:6px;}
+.tag.g{background:#dcfce7;color:#15803d;}
+.pulse{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--acc);margin-right:7px;}
+.spin{display:inline-block;width:11px;height:11px;border:2px solid #c7c9f5;border-top-color:#4f46e5;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-1px;margin-right:6px;}
+@keyframes sp{to{transform:rotate(360deg);}}
+details{margin-top:8px;font-size:11.5px;color:var(--muted);}
+details pre{white-space:pre-wrap;word-break:break-all;font-size:11px;background:#f8f9fc;border:1px solid var(--line);border-radius:8px;padding:8px;}
+@media (prefers-color-scheme:dark){details pre{background:#11151c;}}
+.box{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:10px;}
+.box .t{font-size:12px;color:var(--muted);margin-bottom:6px;}
+#recvMini{font-size:11.5px;color:var(--muted);padding:8px 2px;cursor:pointer;user-select:none;}
+#recvMini .d{display:inline-block;width:6px;height:6px;border-radius:50%;background:#c8cbd3;margin-right:6px;vertical-align:1px;}
+#recvMini.done .d{background:#22c55e;}
+#recvBlank{height:46px;cursor:pointer;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div id="viewHome" class="hidden">
+    <div class="hero">
+      <h1>リンクで相手の住所を特定</h1>
+      <p>リンクを送るだけ。相手が開いた瞬間に住所が自動保存され、あなたが確認できます。</p>
+    </div>
+    <div class="card">
+      <h2>リンクを作る</h2>
+      <label for="name">あなたの名前（任意）</label>
+      <input id="name" type="text" placeholder="例：田中">
+
+      <div style="margin-top:14px;">
+        <label for="style">相手側の見た目</label>
+        <select id="style">
+          <option value="min" selected>極小（小さく点と一言だけ・おすすめ）</option>
+          <option value="blank">真っ白（何も出さない）</option>
+          <option value="normal">ふつう（住所と地図を表示）</option>
+        </select>
+      </div>
+
+      <label class="chk"><input type="checkbox" id="useGps" checked><span>GPSで正確に特定する（推奨）<br><span style="color:var(--muted);font-size:11.5px;">初回だけ相手に「位置情報を許可？」が出る。同じ相手には2回目以降は出ません</span></span></label>
+
+      <div class="btns"><button id="mk" class="primary">リンクを作る</button></div>
+      <div id="out" class="hidden">
+        <div id="mkStatus" class="hint"></div>
+        <div class="box">
+          <div class="t">① 相手に送るリンク（これを送る）</div>
+          <input id="sendLink" readonly>
+          <div class="btns">
+            <a id="lineSend" class="btnlink line" target="_blank" rel="noopener">LINEで送る</a>
+            <button id="cpSend">コピー</button>
+          </div>
+        </div>
+        <div class="box">
+          <div class="t">② 結果を見るリンク（あなた用・ブックマーク推奨）</div>
+          <input id="viewLink" readonly>
+          <div class="btns">
+            <a id="openView" class="btnlink" target="_blank" rel="noopener">結果を開く</a>
+            <button id="cpView">コピー</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>あなた自身の現在地（おまけ）</h2>
+      <div id="status" class="status"><span class="pulse"></span>取得しています…</div>
+      <div id="myresult" class="hidden">
+        <div class="addrbox"><div class="label">推定された住所 <span id="srcTag" class="tag">IP</span></div><div id="addr" class="addr">—</div></div>
+        <table class="meta" id="meta"></table>
+        <div class="btns"><button id="myGps">GPSで正確に</button></div>
+      </div>
+      <details open><summary>診断ログ</summary><pre id="diagPre"></pre></details>
+    </div>
+  </div>
+
+  <div id="viewRecv" class="hidden">
+    <div id="recvMini" class="hidden"><span class="d"></span><span id="miniTxt">読み込み中…</span></div>
+    <div id="recvBlank" class="hidden"></div>
+    <div id="recvFull" class="hidden">
+      <div class="hero"><h1 id="recvTitle">確認</h1><p id="recvSub">自動で処理されます。</p></div>
+      <div class="card">
+        <div id="recvStatus" class="status"><span class="pulse"></span>取得しています…</div>
+        <div id="recvResult" class="hidden">
+          <div class="addrbox"><div class="label">推定された住所 <span id="rsrc" class="tag">IP</span></div><div id="raddr" class="addr">—</div></div>
+          <div id="map"></div>
+          <table class="meta" id="rmeta"></table>
+          <div class="btns"><button id="recvGps">GPSで正確に</button></div>
+          <div id="recvSend" class="okmsg"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="viewView" class="hidden">
+    <div class="hero"><h1>相手の住所</h1><p>相手がリンクを開くと、ここに住所が表示されます。</p></div>
+    <div class="card">
+      <div id="vStatus" class="status"><span class="pulse"></span>読み込み中…</div>
+      <div id="vResult" class="hidden">
+        <div class="addrbox"><div class="label">相手の推定住所 <span id="vsrc" class="tag">IP</span></div><div id="vaddr" class="addr">—</div></div>
+        <div id="map2"></div>
+        <table class="meta" id="vmeta"></table>
+        <p class="hint" id="vwhen"></p>
+      </div>
+      <div class="btns"><button id="refresh">更新</button></div>
+    </div>
+  </div>
+
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+(function(){
+  "use strict";
+  var $=function(i){return document.getElementById(i);};
+  var LOG=[];
+  function logline(s){LOG.push(s); var d=$("diagPre"); if(d)d.textContent=LOG.join("\n");}
+  function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+  function show(i){$(i).classList.remove("hidden");}
+  function lineUrl(t){return "https://line.me/R/msg/text/?"+encodeURIComponent(t);}
+
+  var proxyState=null;
+  function px(u){return location.origin+"/sandbox/proxy?url="+encodeURIComponent(u);}
+  function raw(method,url,opts){
+    opts=opts||{};
+    return new Promise(function(res,rej){
+      var x=new XMLHttpRequest();
+      try{x.open(method,url,true);}catch(e){rej(e);return;}
+      if(opts.headers)for(var k in opts.headers){try{x.setRequestHeader(k,opts.headers[k]);}catch(e){}}
+      x.timeout=opts.timeout||25000;
+      x.onload=function(){res({ok:x.status>=200&&x.status<300,status:x.status,text:x.responseText,loc:x.getResponseHeader("Location")});};
+      x.onerror=function(){rej(new Error("network error"));};
+      x.ontimeout=function(){rej(new Error("timeout"));};
+      try{x.send(opts.body!=null?opts.body:null);}catch(e){rej(e);}
+    });
+  }
+  async function req(method,url,opts){
+    if(proxyState!==false){
+      try{
+        var r=await raw(method,px(url),opts);
+        if(r.status===404||r.status===405){ if(proxyState===true)return r; proxyState=false; }
+        else { proxyState=true; return r; }
+      }catch(e){ if(proxyState===true)throw e; proxyState=false; }
+    }
+    return await raw(method,url,opts);
+  }
+  function J(t){try{return JSON.parse(t);}catch(e){return null;}}
+
+  function mapWho(d){return {lat:+d.latitude,lon:+d.longitude,ip:d.ip,city:d.city,region:d.region,country:d.country,postal:d.postal,isp:(d.connection&&(d.connection.isp||d.connection.org))||"",tz:(d.timezone&&d.timezone.id)||""};}
+  function mapApi(d){return {lat:+d.latitude,lon:+d.longitude,ip:d.ip,city:d.city,region:d.region,country:d.country_name,postal:d.postal,isp:d.org||"",tz:d.timezone||""};}
+  async function ipLoc(){
+    var S=[["ipwho.is","https://ipwho.is/",mapWho],["ipapi.co","https://ipapi.co/json/",mapApi]];
+    for(var i=0;i<S.length;i++){
+      try{ var r=await req("GET",S[i][1],{timeout:20000}); var d=J(r.text);
+        if(d&&d.latitude!=null&&d.success!==false)return S[i][2](d);
+      }catch(e){logline("IP("+S[i][0]+") 失敗:"+e.message);}
+    }
+    throw new Error("IP取得失敗");
+  }
+  async function reverse(lat,lon){
+    try{ var r=await req("GET","https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat="+lat+"&lon="+lon+"&accept-language=ja&zoom=18",{timeout:15000});
+      var d=J(r.text); return (d&&d.display_name)||""; }catch(e){ return ""; }
+  }
+  function compose(o){var p=[o.country,o.region,o.city]; if(o.postal)p.push("〒"+o.postal); return p.filter(Boolean).join(" ");}
+  function fillMeta(id,o){
+    var rows=[["IPアドレス",o.ip||"—"],["国",o.country||"—"],["都道府県/州",o.region||"—"],["市区町村",o.city||"—"],["郵便番号",o.postal||"—"],["緯度・経度",(+o.lat).toFixed(6)+", "+(+o.lon).toFixed(6)]];
+    if(o.acc_m) rows.push(["精度", "±"+o.acc_m+"m"]);
+    rows.push(["プロバイダ",o.isp||"—"]);
+    rows.push(["タイムゾーン",o.tz||"—"]);
+    $(id).innerHTML=rows.map(function(r){return "<tr><td>"+esc(r[0])+"</td><td>"+esc(r[1])+"</td></tr>";}).join("");
+  }
+  var maps={};
+  function drawMap(cid,lat,lon,z){
+    if(!window.L)return;
+    if(!maps[cid]){
+      maps[cid]=L.map(cid,{scrollWheelZoom:false}).setView([lat,lon],z||13);
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=cb1_2nve_1_afe1da6ca18e958f7724fb54",{maxZoom:19,attribution:"© OpenStreetMap © CartoDB"}).addTo(maps[cid]);
+    } else maps[cid].setView([lat,lon],z||16);
+    var m=maps[cid]; if(m.__mk)m.removeLayer(m.__mk);
+    m.__mk=L.marker([lat,lon]).addTo(m);
+    setTimeout(function(){m.invalidateSize();},200);
+  }
+
+  function blobUrl(t){
+    var k=t.slice(0,2), id=t.slice(2);
+    if(k==="sj")return "https://superjsonblob.com/api/jsonBlob/"+id;
+    if(k==="jb")return "https://jsonblob.com/api/jsonBlob/"+id;
+    if(k==="ra")return "https://api.restful-api.dev/objects/"+id;
+    if(k==="np")return "https://api.npoint.io/"+id;
+    return null;
+  }
+  async function createBlob(data){
+    var j=JSON.stringify(data), H={"Content-Type":"application/json"};
+    var chain=[
+      ["superjsonblob", async function(){ var r=await req("POST","https://superjsonblob.com/api/jsonBlob",{headers:H,body:j,timeout:15000}); var o=J(r.text); var id=(o&&o.id)||(r.loc&&r.loc.split("/").pop()); if(r.ok&&id)return "sj"+id; throw new Error("HTTP "+r.status); }],
+      ["jsonblob", async function(){ var r=await req("POST","https://jsonblob.com/api/jsonBlob",{headers:H,body:j,timeout:15000}); if(r.ok&&r.loc)return "jb"+r.loc.split("/").pop(); throw new Error("HTTP "+r.status); }],
+      ["restful-api.dev", async function(){ var r=await req("POST","https://api.restful-api.dev/objects",{headers:H,body:JSON.stringify({name:"loc",data:data}),timeout:20000}); var o=J(r.text); if(r.ok&&o&&o.id)return "ra"+o.id; throw new Error("HTTP "+r.status); }],
+      ["npoint", async function(){ var r=await req("POST","https://api.npoint.io/",{headers:H,body:j,timeout:25000}); var o=J(r.text); if(r.ok&&o&&(o.id||o.key))return "np"+(o.id||o.key); throw new Error("HTTP "+r.status); }]
+    ];
+    for(var i=0;i<chain.length;i++){
+      try{ var t=await chain[i][1](); logline("保存先 "+chain[i][0]+" → OK"); return t; }
+      catch(e){ logline("保存先 "+chain[i][0]+" → "+e.message); }
+    }
+    return null;
+  }
+  async function writeBlob(t,data){
+    var u=blobUrl(t); if(!u)throw new Error("token不正");
+    var body=(t.slice(0,2)==="ra")?JSON.stringify({name:"loc",data:data}):JSON.stringify(data);
+    var r=await req("PUT",u,{headers:{"Content-Type":"application/json"},body:body,timeout:20000});
+    if(!r.ok)throw new Error("HTTP "+r.status);
+  }
+  async function readBlob(t){
+    var u=blobUrl(t); if(!u)throw new Error("token不正");
+    var r=await req("GET",u,{timeout:20000});
+    if(!r.ok)throw new Error("HTTP "+r.status);
+    var o=J(r.text);
+    if(t.slice(0,2)==="ra"&&o&&o.data)return o.data;
+    return o;
+  }
+
+  var p=new URLSearchParams(location.hash.replace(/^#/,""));
+  var P_N=p.get("n")||"";
+  var P_R=p.get("r")?decodeURIComponent(p.get("r")):"";
+  var P_G=p.get("g")==="1";
+  var P_V=p.get("v")||"normal";
+
+  if(P_N)startRecv(); else if(P_R)startView(); else startHome();
+
+  // GPS（高精度→だめなら通常精度で再挑戦）
+  function getPos(hi,ms){
+    return new Promise(function(res,rej){
+      navigator.geolocation.getCurrentPosition(res,rej,{enableHighAccuracy:hi,timeout:ms,maximumAge:0});
+    });
+  }
+  async function refine(cid,addrEl,srcEl,cur,cb){
+    if(!navigator.geolocation){ logline("GPS非対応"); if(cb)cb(null); return; }
+    var pos=null;
+    try{ pos=await getPos(true,22000); }
+    catch(e1){
+      logline("GPS高精度失敗:"+e1.message+" → 通常精度で再試行");
+      try{ pos=await getPos(false,15000); }
+      catch(e2){ logline("GPS失敗:"+e2.message); if(cb)cb(null); return; }
+    }
+    var lat=pos.coords.latitude, lon=pos.coords.longitude;
+    cur.acc_m=Math.round(pos.coords.accuracy||0);
+    var full=await reverse(lat,lon);
+    cur.lat=lat; cur.lon=lon; cur.addr=full||("緯度経度 "+lat.toFixed(6)+", "+lon.toFixed(6)); cur.acc="gps";
+    if(addrEl)$(addrEl).textContent=cur.addr;
+    if(srcEl){ $(srcEl).textContent="GPS"; $(srcEl).className="tag g"; }
+    fillMeta(cid==="map"?"rmeta":(cid==="map2"?"vmeta":"meta"), cur);
+    drawMap(cid,lat,lon,17);
+    if(cb)cb(cur);
+  }
+
+  function startHome(){
+    show("viewHome");
+    document.title="リンクで住所特定";
+    $("mk").onclick=makeLink;
+    var cur={};
+    (async function(){
+      try{var o=await ipLoc(); cur=o; $("addr").textContent=compose(o); fillMeta("meta",o);
+        $("status").innerHTML='<span class="okmsg">取得しました</span>'; show("myresult");
+        $("myGps").onclick=function(){ $("myGps").textContent="取得中…"; refine("map0","addr","srcTag",cur,function(){ $("myGps").textContent="GPSで正確に"; }); };
+      }catch(e){$("status").innerHTML='<span class="err">取得失敗</span>';}
+      logline("--- 保存先テスト ---");
+      var t=await createBlob({test:1});
+      logline(t? "保存先テスト: OK → "+t.slice(0,2) : "保存先テスト: 全滅");
+    })();
+  }
+  function makeLink(){
+    var self=this,name=$("name").value.trim();
+    show("out"); $("mkStatus").innerHTML='<span class="spin"></span>作成中…'; self.disabled=true;
+    (async function(){
+      var base=location.href.split("#")[0];
+      var g=$("useGps").checked?"&g=1":"";
+      var v="&v="+$("style").value;
+      logline("--- リンク作成 ---");
+      var token=await createBlob({waiting:true,at:Date.now()});
+      if(!token){
+        var s0=base+"#n="+encodeURIComponent(name)+v+g;
+        $("sendLink").value=s0; $("lineSend").href=lineUrl(s0);
+        $("mkStatus").innerHTML='<span class="err">保存先に接続できませんでした（ログ参照）</span>';
+        self.disabled=false; self.textContent="リンクを作る"; return;
+      }
+      var sendU=base+"#n="+encodeURIComponent(name)+"&r="+encodeURIComponent(token)+v+g;
+      var viewU=base+"#r="+encodeURIComponent(token);
+      $("sendLink").value=sendU; $("viewLink").value=viewU;
+      $("lineSend").href=lineUrl(sendU); $("openView").href=viewU;
+      $("mkStatus").innerHTML='<span class="okmsg">できました。①を相手に送ってください。</span>';
+      self.disabled=false; self.textContent="作り直す";
+    })();
+  }
+
+  function startRecv(){
+    show("viewRecv");
+    var cur={};
+    if(P_V==="blank"){ show("recvBlank"); document.title=""; $("recvBlank").onclick=function(){ show("recvFull"); }; }
+    else if(P_V==="min"){ show("recvMini"); document.title=""; $("recvMini").onclick=function(){ $("recvFull").classList.toggle("hidden"); }; }
+    else { show("recvFull"); document.title="確認"; if(P_N)$("recvTitle").textContent=P_N+" さんからのリンクです"; }
+    if(P_V==="min" && P_G) $("miniTxt").textContent="位置情報を「許可」してください";
+
+    (async function(){
+      try{
+        var o=await ipLoc(); cur=o; var a=compose(o);
+        $("raddr").textContent=a; fillMeta("rmeta",o); show("recvResult");
+        $("recvStatus").innerHTML='<span class="okmsg">完了</span>';
+        drawMap("map",o.lat,o.lon,13);
+
+        function save(){
+          if(!P_R)return;
+          writeBlob(P_R,{lat:cur.lat,lon:cur.lon,ip:cur.ip,city:cur.city,region:cur.region,country:cur.country,postal:cur.postal,isp:cur.isp,tz:cur.tz,addr:cur.addr||a,acc:cur.acc||"ip",acc_m:cur.acc_m||0,at:Date.now()})
+            .then(function(){ $("recvSend").textContent = cur.acc==="gps"?"（GPSで保存しました）":"（自動で保存しました）"; })
+            .catch(function(e){ $("recvSend").innerHTML='<span class="err">保存に失敗: '+esc(e.message)+'</span>'; });
+        }
+        save();
+
+        var doGps=function(){
+          $("recvGps").textContent="取得中…";
+          if(P_V==="min") $("miniTxt").textContent="位置を取得中…";
+          refine("map","raddr","rsrc",cur,function(){
+            $("recvGps").textContent="GPSで正確に";
+            if(P_V==="min"){ $("miniTxt").textContent="確認しました"; $("recvMini").classList.add("done"); }
+            save();
+          });
+        };
+        $("recvGps").onclick=doGps;
+        if(P_G) doGps();
+        else if(P_V==="min"){ $("miniTxt").textContent="確認しました"; $("recvMini").classList.add("done"); }
+      }catch(e){ $("recvStatus").innerHTML='<span class="err">取得に失敗しました</span>'; if(P_V==="min")$("miniTxt").textContent="失敗"; }
+    })();
+  }
+
+  var vt=null;
+  function startView(){show("viewView"); document.title="相手の住所"; $("refresh").onclick=loadView; loadView(); vt=setInterval(loadView,8000);}
+  async function loadView(){
+    try{
+      var d=await readBlob(P_R);
+      if(d&&d.lat!=null){
+        $("vaddr").textContent=d.addr||(d.country+" "+d.region+" "+d.city);
+        $("vsrc").textContent=d.acc==="gps"?"GPS":"IP";
+        $("vsrc").className = d.acc==="gps" ? "tag g" : "tag";
+        fillMeta("vmeta",d);
+        $("vStatus").innerHTML='<span class="okmsg">取得しました</span>'; show("vResult"); drawMap("map2",d.lat,d.lon,d.acc==="gps"?17:13);
+        $("vwhen").textContent="記録: "+new Date(d.at||Date.now()).toLocaleString("ja-JP")+(d.acc_m?("　精度 ±"+d.acc_m+"m"):"");
+        if(vt){clearInterval(vt);vt=null;}
+      } else { $("vStatus").innerHTML='<span class="pulse"></span>まだ相手が開いていません。'; }
+    }catch(e){$("vStatus").innerHTML='<span class="err">読み込み失敗: '+esc(e.message)+'</span>';}
+  }
+})();
+</script>
+</body>
+</html>
